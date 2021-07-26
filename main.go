@@ -38,17 +38,23 @@ func main() {
 	defer sdl.Quit()
 
 	window, err := sdl.CreateWindow("Raycaster", sdl.WINDOWPOS_UNDEFINED, sdl.WINDOWPOS_UNDEFINED,
-		800, 600, sdl.WINDOW_SHOWN)
+		640, 400, sdl.WINDOW_SHOWN|sdl.WINDOW_RESIZABLE)
 	if err != nil {
 		panic(err)
 	}
+	window.SetMinimumSize(320, 200)
 
 	renderer, err := sdl.CreateRenderer(window, -1, sdl.RENDERER_ACCELERATED)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Failed to create renderer: %s\n", err)
 		panic(err)
 	}
+	renderer.SetLogicalSize(320, 200)
+	//renderer.SetIntegerScale(true)
 	defer renderer.Destroy()
+
+	// Virtual screen
+	//virtual := sdl.Rect{0, 0, 320, 200}
 
 	// Define player and keyboard
 	player := Player{0, 0, 0, 4}
@@ -83,8 +89,6 @@ func main() {
 						keyboard.KeyUp = 0
 					}
 
-					//player.Y -= player.Speed
-
 				case sdl.K_DOWN:
 					println("down key")
 					if keyPressed == sdl.PRESSED {
@@ -92,7 +96,6 @@ func main() {
 					} else if keyPressed == sdl.RELEASED {
 						keyboard.KeyDown = 0
 					}
-					//player.Y += player.Speed
 
 				case sdl.K_LEFT:
 					println("left key")
@@ -101,7 +104,6 @@ func main() {
 					} else if keyPressed == sdl.RELEASED {
 						keyboard.KeyLeft = 0
 					}
-					//player.X -= player.Speed
 
 				case sdl.K_RIGHT:
 					println("Right key")
@@ -110,7 +112,6 @@ func main() {
 					} else if keyPressed == sdl.RELEASED {
 						keyboard.KeyRight = 0
 					}
-					//player.X += player.Speed
 
 				case sdl.K_RCTRL, sdl.K_LCTRL:
 					println("ctrl key")
@@ -159,7 +160,11 @@ func main() {
 		renderer.SetDrawColor(0, 0, 0, 255)
 		renderer.Clear()
 
-		rect := sdl.Rect{player.X, player.Y, 200, 200}
+		background := sdl.Rect{0, 0, 320, 200}
+		renderer.SetDrawColor(0, 0, 128, 255)
+		renderer.FillRect(&background)
+
+		rect := sdl.Rect{player.X, player.Y, 100, 100}
 		renderer.SetDrawColor(255, 0, 0, 255)
 		renderer.FillRect(&rect)
 
