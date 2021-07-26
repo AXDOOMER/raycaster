@@ -26,15 +26,18 @@ type Player struct {
 	PlaneX float64
 	PlaneY float64
 	Angle  float64
+	LookY  int32
 	Speed  float64
 }
 
 type Keyboard struct {
-	KeyUp     int32
-	KeyDown   int32
-	KeyLeft   int32
-	KeyRight  int32
-	KeyAction int32
+	KeyUp       int32
+	KeyDown     int32
+	KeyLeft     int32
+	KeyRight    int32
+	KeyAction   int32
+	KeyLookUp   int32
+	KeyLookDown int32
 }
 
 var worldmap = [24][24]int32{
@@ -92,8 +95,10 @@ func main() {
 	//virtual := sdl.Rect{0, 0, 320, 200}
 
 	// Define player and keyboard
-	player := Player{22, 11.5, -1, 0, 0, 0.66, 0, 0.05}
-	keyboard := Keyboard{0, 0, 0, 0, 0}
+	player := Player{22, 11.5, -1, 0, 0, 0.66, 0, 0, 0.05}
+	keyboard := Keyboard{0, 0, 0, 0, 0, 0, 0}
+
+	drawsky(&player, renderer)
 
 	running := true
 	for running {
@@ -164,6 +169,22 @@ func main() {
 						player.Speed /= 2
 					}
 
+				case sdl.K_PAGEUP:
+					println("page up")
+					if keyPressed == sdl.PRESSED {
+						keyboard.KeyLookUp += 1
+					} else if keyPressed == sdl.RELEASED {
+						keyboard.KeyLookUp = 0
+					}
+
+				case sdl.K_PAGEDOWN:
+					println("page down")
+					if keyPressed == sdl.PRESSED {
+						keyboard.KeyLookDown += 1
+					} else if keyPressed == sdl.RELEASED {
+						keyboard.KeyLookDown = 0
+					}
+
 				} // END SWITCH
 			}
 		}
@@ -218,6 +239,17 @@ func main() {
 			player.PlaneY = oldPlaneX*math.Sin(rotSpeed) + player.PlaneY*math.Cos(rotSpeed)
 		}
 
+		if keyboard.KeyLookUp > 0 {
+			if player.LookY < 145 {
+				player.LookY += 10
+			}
+		}
+		if keyboard.KeyLookDown > 0 {
+			if player.LookY > -145 {
+				player.LookY -= 10
+			}
+		}
+
 		////////////////////////////////////////////////////////////////////////////
 		// UPDATE SCREEN
 		////////////////////////////////////////////////////////////////////////////
@@ -242,6 +274,15 @@ func main() {
 
 		renderer.Present()
 		sdl.Delay(16)
+	}
+}
+
+func drawsky(player *Player, renderer *sdl.Renderer) {
+	var previous float64 = 0
+	for i := 0; i < 320; i++ {
+		x := math.Sin(float64(i) * math.Pi / 320.0)
+		previous += x * (320.0 / 256.0)
+		fmt.Println(i, " ", uint32(previous))
 	}
 }
 
@@ -326,12 +367,14 @@ func raycast(player *Player, renderer *sdl.Renderer) {
 		lineHeight := int32(200 / perpWallDist)
 
 		var drawStart int32 = -lineHeight/2 + 200/2
+		drawStart += player.LookY
 		if drawStart < 0 {
 			drawStart = 0
 		}
 		var drawEnd int32 = lineHeight/2 + 200/2
+		drawEnd += player.LookY
 		if drawEnd >= 200 {
-			drawEnd = 200 - 1
+			drawEnd = 200 /*- 1*/
 		}
 
 		// texture calculations
