@@ -347,24 +347,14 @@ func raycast(player *Player, renderer *sdl.Renderer) {
 		//var step float64 = 1.0 * 64 / float64(lineHeight)
 		//var texPos float64 = float64(drawStart-200/2+lineHeight/2) * step
 
-		/*for y := drawStart; y < drawEnd; y++ {
-			//var texY int32 = texPos & (64 - 1)
+		for y := drawStart; y < drawEnd; y++ {
 			var color uint32 = 0xFFFF00FF
 			if side == 1 {
 				color = 0xAAAA00FF
 			}
-			pixel := sdl.Rect{int32(x), y, 1, 1}
+
 			renderer.SetDrawColor(uint8(color&0xFF000000>>24), uint8(color&0x00FF0000>>16), uint8(color&0x0000FF00>>8), uint8(color&0x000000FF))
-			renderer.FillRect(&pixel)
-		}*/
-
-		var color uint32 = 0xFFFF00FF
-		if side == 1 {
-			color = 0xAAAA00FF
+			renderer.DrawPoint(int32(x), y)
 		}
-		pixel := sdl.Rect{int32(x), drawStart, 1, drawEnd - drawStart}
-		renderer.SetDrawColor(uint8(color&0xFF000000>>24), uint8(color&0x00FF0000>>16), uint8(color&0x0000FF00>>8), uint8(color&0x000000FF))
-		renderer.FillRect(&pixel)
-
 	}
 }
