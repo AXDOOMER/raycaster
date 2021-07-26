@@ -198,7 +198,7 @@ func main() {
 
 		if keyboard.KeyRight > 0 {
 			var oldDirX float64 = player.DirX
-			var rotSpeed float64 = 0.15
+			var rotSpeed float64 = player.Speed
 			player.DirX = player.DirX*math.Cos(-rotSpeed) - player.DirY*math.Sin(-rotSpeed)
 			player.DirY = oldDirX*math.Sin(-rotSpeed) + player.DirY*math.Cos(-rotSpeed)
 			var oldPlaneX float64 = player.PlaneX
@@ -210,7 +210,7 @@ func main() {
 		if keyboard.KeyLeft > 0 {
 			//player.PosX -= player.Speed
 			var oldDirX float64 = player.DirX
-			var rotSpeed float64 = 0.15
+			var rotSpeed float64 = player.Speed
 			player.DirX = player.DirX*math.Cos(rotSpeed) - player.DirY*math.Sin(rotSpeed)
 			player.DirY = oldDirX*math.Sin(rotSpeed) + player.DirY*math.Cos(rotSpeed)
 			var oldPlaneX float64 = player.PlaneX
@@ -229,11 +229,12 @@ func main() {
 		renderer.SetDrawColor(0, 0, 128, 255)
 		renderer.FillRect(&background)
 
-		rect := sdl.Rect{int32(player.PosX), int32(player.PosY), 100, 100}
-		renderer.SetDrawColor(255, 0, 0, 255)
-		renderer.FillRect(&rect)
-
 		raycast(&player, renderer)
+		drawmap(&player, renderer)
+
+		//rect := sdl.Rect{int32(player.PosX), int32(player.PosY), 100, 100}
+		//renderer.SetDrawColor(255, 0, 0, 255)
+		//renderer.FillRect(&rect)
 
 		////////////////////////////////////////////////////////////////////////////
 		// UPDATE SDL WINDOW
@@ -244,11 +245,21 @@ func main() {
 	}
 }
 
-func raycast(player *Player, renderer *sdl.Renderer) {
-	rect := sdl.Rect{5, 5, 30, 40}
-	renderer.SetDrawColor(0, 255, 0, 255)
-	renderer.FillRect(&rect)
+func drawmap(player *Player, renderer *sdl.Renderer) {
+	for y := 0; y < 24; y++ {
+		for x := 0; x < 24; x++ {
+			if worldmap[y][x] > 0 {
+				renderer.SetDrawColor(0, 255, 0, 255)
+				renderer.DrawPoint(int32(x), int32(y))
+			}
+		}
+	}
 
+	renderer.SetDrawColor(255, 0, 0, 255)
+	renderer.DrawPoint(int32(player.PosY), int32(player.PosX))
+}
+
+func raycast(player *Player, renderer *sdl.Renderer) {
 	var w int32 = 320
 	for x := 0; x < 320; x++ {
 		var cameraX float64 = 2.0*float64(x)/float64(w) - 1
