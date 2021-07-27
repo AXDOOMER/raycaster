@@ -9,12 +9,20 @@ import (
 	//"time"
 	//"encoding/base64"
 
+	"encoding/base64"
 	"fmt"
+	"image/png"
+	"io"
 	"math"
 	"os"
+	"strings"
 
 	"github.com/veandco/go-sdl2/sdl"
 )
+
+const sample_texture = "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"
+
+var some_texture = [64][64]uint32{{0}}
 
 // go get -v github.com/veandco/go-sdl2/sdl
 
@@ -99,6 +107,8 @@ func main() {
 	keyboard := Keyboard{0, 0, 0, 0, 0, 0, 0}
 
 	drawsky(&player, renderer)
+
+	ExampleDecode()
 
 	running := true
 	for running {
@@ -398,25 +408,59 @@ func raycast(player *Player, renderer *sdl.Renderer) {
 		}
 
 		// screen texture->pixel stuff
-		//var step float64 = 1.0 * 64 / float64(lineHeight)
-		//var texPos float64 = float64(drawStart-200/2+lineHeight/2) * step
+		var step float64 = 1.0 * 64 / float64(lineHeight)
+		var texPos float64 = float64((drawStart-player.LookY)-200/2+lineHeight/2) * step
+		//texPos += float64(player.LookY / 2)
 
-		/*for y := drawStart; y < drawEnd; y++ {
-			var color uint32 = 0xFFFF00FF
+		for y := drawStart; y < drawEnd; y++ {
+			/*var color uint32 = 0xFFFF00FF
 			if side == 1 {
 				color = 0xAAAA00FF
+			}*/
+
+			var texY int32 = int32(texPos) & (64 - 1)
+			texPos += step
+			var color uint32 = some_texture[texY][texX]
+
+			if side == 1 {
+				color = (color >> 1) & 0x7F7F7F7F
 			}
 
 			renderer.SetDrawColor(uint8(color&0xFF000000>>24), uint8(color&0x00FF0000>>16), uint8(color&0x0000FF00>>8), uint8(color&0x000000FF))
 			renderer.DrawPoint(int32(x), y)
-		}*/
+		}
 
-		var color uint32 = 0xFFFF00FF
+		/*var color uint32 = 0xFFFF00FF
 		if side == 1 {
 			color = 0xAAAA00FF
 		}
 		pixel := sdl.Rect{int32(x), drawStart, 1, drawEnd - drawStart}
 		renderer.SetDrawColor(uint8(color&0xFF000000>>24), uint8(color&0x00FF0000>>16), uint8(color&0x0000FF00>>8), uint8(color&0x000000FF))
-		renderer.FillRect(&pixel)
+		renderer.FillRect(&pixel)*/
+	}
+}
+
+func samplePNG() io.Reader {
+	return base64.NewDecoder(base64.StdEncoding, strings.NewReader(sample_texture))
+}
+
+func ExampleDecode() {
+	// This example uses png.Decode which can only decode PNG images.
+	// Consider using the general image.Decode as it can sniff and decode any registered image format.
+	img, err := png.Decode(samplePNG())
+	if err != nil {
+		panic(err)
+	}
+
+	for y := img.Bounds().Min.Y; y < img.Bounds().Max.Y; y++ {
+		for x := img.Bounds().Min.X; x < img.Bounds().Max.X; x++ {
+			color := img.At(x, y)
+			rr, gg, bb, aa := color.RGBA()
+			println(rr>>8, gg>>8, bb>>8, aa>>8)
+			// pack values into pixels
+			var pixel uint32 = ((rr >> 8) << 24) | ((gg >> 8) << 16) | ((bb >> 8) << 8) | aa>>8
+			some_texture[y][x] = pixel
+		}
+		fmt.Print("\n")
 	}
 }
