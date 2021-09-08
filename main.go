@@ -271,7 +271,7 @@ func main() {
 		renderer.SetDrawColor(0, 0, 128, 255)
 		renderer.FillRect(&background)
 
-		doplane(&player, renderer)
+		dofloor(&player, renderer)
 		raycast(&player, renderer)
 		drawmap(&player, renderer)
 
@@ -311,7 +311,7 @@ func drawmap(player *Player, renderer *sdl.Renderer) {
 	renderer.DrawPoint(int32(player.PosY), int32(player.PosX))
 }
 
-func doplane(player *Player, renderer *sdl.Renderer) {
+func dofloor(player *Player, renderer *sdl.Renderer) {
 	//var h int32 = 200
 
 	for y := 0; y < 200; y++ {
@@ -321,7 +321,7 @@ func doplane(player *Player, renderer *sdl.Renderer) {
 		rayDirY1 := player.DirY + player.PlaneY
 
 		// current pos compared to screen center
-		p := y - 200/2 - int(player.LookY)
+		p := y - 200/2 - int(player.LookY) + 1
 		posZ := 0.5 * 200 /*+ float64(player.LookY)*/
 		rowDistance := posZ / float64(p)
 
@@ -338,19 +338,20 @@ func doplane(player *Player, renderer *sdl.Renderer) {
 			cellX := int32(floorX)
 			cellY := int32(floorY)
 
-			tx := int32(64*(floorX-float64(cellX))) & (64 - 1)
-			ty := int32(64*(floorY-float64(cellY))) & (64 - 1)
-
-			floorX += floorStepX
-			floorY += floorStepY
-
 			//fmt.Printf("tx: %v\t\t ty: %v\n", tx, ty)
 
-			var color uint32 = some_texture[tx][ty]
-			color = (color >> 1) & 0x7F7F7F7F
+			if y >= 100+int(player.LookY) && y < 200 {
+				// floor
+				tx := int32(64*(floorX-float64(cellX))) & (64 - 1)
+				ty := int32(64*(floorY-float64(cellY))) & (64 - 1)
 
-			renderer.SetDrawColor(uint8(color&0xFF000000>>24), uint8(color&0x00FF0000>>16), uint8(color&0x0000FF00>>8), uint8(color&0x000000FF))
-			if y >= 100+int(player.LookY) {
+				floorX += floorStepX
+				floorY += floorStepY
+
+				var color uint32 = some_texture[tx][ty]
+				color = (color >> 1) & 0x7F7F7F7F
+				renderer.SetDrawColor(uint8(color&0xFF000000>>24), uint8(color&0x00FF0000>>16), uint8(color&0x0000FF00>>8), uint8(color&0x000000FF))
+
 				renderer.DrawPoint(int32(x), int32(y))
 			}
 		}
