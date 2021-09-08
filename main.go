@@ -17,6 +17,7 @@ import (
 	"math"
 	"os"
 	"strings"
+	"unsafe"
 
 	"github.com/veandco/go-sdl2/sdl"
 )
@@ -79,8 +80,9 @@ var worldmap = [24][24]int32{
 	{4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 1, 1, 1, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3},
 }
 
-func main() {
+var screenbuffer [320][200]uint32
 
+func main() {
 	if err := sdl.Init(sdl.INIT_EVERYTHING); err != nil {
 		panic(err)
 	}
@@ -110,7 +112,7 @@ func main() {
 	player := Player{22, 11.5, -1, 0, 0, 0.66, 0, 0, 0.05}
 	keyboard := Keyboard{0, 0, 0, 0, 0, 0, 0}
 
-	drawsky(&player, renderer)
+	//drawsky(&player, renderer)
 
 	ExampleDecode()
 	ExampleDecode2()
@@ -278,7 +280,29 @@ func main() {
 		renderer.SetDrawColor(0, 0, 128, 255)
 		renderer.FillRect(&background)
 
-		drawsky(&player, renderer)
+		//texture := renderer.CreateTexture(sdl.SDL_PIXELFORMAT_RGBA8888, sdl.SDL_TEXTUREACCESS_TARGET, 320, 200)
+
+		//renderer.pixels[0][0] = 0
+
+		//renderer.Copy(texture, nil, nil)
+
+		surface, err := sdl.CreateRGBSurfaceFrom(unsafe.Pointer(&screenbuffer), 320, 200, 32, 8, 255, 255, 255, 255) 
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Failed to create surface: %s\n", err)
+			panic(err)
+		}
+
+
+		texture, err := renderer.CreateTextureFromSurface(surface)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Failed to create texture: %s\n", err)
+			panic(err)
+		}
+
+		renderer.Copy(texture, nil, nil)
+
+
+		drawsky(&player)
 		dofloor(&player, renderer)
 		raycast(&player, renderer)
 		drawmap(&player, renderer)
@@ -296,9 +320,17 @@ func main() {
 	}
 }
 
-// TODO: FIX SKY NOT TILING ALLRIGHT
-func drawsky(player *Player, renderer *sdl.Renderer) {
+func putPixel(x int32, y int32, color uint32) {
+	// ignore values that are out of range
+	if x >= 0 && x < 320 {
+		if y >= 0 && y < 200 {
+			screenbuffer[x][y] = color
+		}
+	}
+}
 
+func drawsky(player *Player) {
+	// Do cylindrical projection?
 	for x := 0; x < 320; x++ {
 		for y := 0; y < 200; y++ {
 			slide := x + int(player.Angle*205)
@@ -307,11 +339,12 @@ func drawsky(player *Player, renderer *sdl.Renderer) {
 				slide += 1280
 			}
 			var color uint32 = second_texture[y][slide%640]
-			renderer.SetDrawColor(uint8(color&0xFF000000>>24), uint8(color&0x00FF0000>>16), uint8(color&0x0000FF00>>8), uint8(color&0x000000FF))
-			renderer.DrawPoint(int32(x), int32(y+int(player.LookY))-105)
+			//renderer.SetDrawColor(uint8(color&0xFF000000>>24), uint8(color&0x00FF0000>>16), uint8(color&0x0000FF00>>8), uint8(color&0x000000FF))
+			//renderer.DrawPoint(int32(x), int32(y+int(player.LookY))-105)
+			//screenbuffer[int32(x)][ int32(y+int(player.LookY))-105] = color
+			putPixel(int32(x), int32(y+int(player.LookY))-105, color)
 		}
 	}
-	println(player.Angle)
 }
 
 func drawmap(player *Player, renderer *sdl.Renderer) {
