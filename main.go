@@ -321,7 +321,7 @@ func doplane(player *Player, renderer *sdl.Renderer) {
 		rayDirY1 := player.DirY + player.PlaneY
 
 		// current pos compared to screen center
-		p := y - 200/2 + 100 + int(player.LookY)
+		p := y - 200/2 - int(player.LookY)
 		posZ := 0.5 * 200 /*+ float64(player.LookY)*/
 		rowDistance := posZ / float64(p)
 
@@ -350,8 +350,9 @@ func doplane(player *Player, renderer *sdl.Renderer) {
 			color = (color >> 1) & 0x7F7F7F7F
 
 			renderer.SetDrawColor(uint8(color&0xFF000000>>24), uint8(color&0x00FF0000>>16), uint8(color&0x0000FF00>>8), uint8(color&0x000000FF))
-			renderer.DrawPoint(int32(x), 100-int32(y)-1)
-			renderer.DrawPoint(int32(x), 100+int32(y))
+			if y >= 100+int(player.LookY) {
+				renderer.DrawPoint(int32(x), int32(y))
+			}
 		}
 	}
 }
