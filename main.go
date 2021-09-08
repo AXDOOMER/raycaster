@@ -271,6 +271,7 @@ func main() {
 		renderer.SetDrawColor(0, 0, 128, 255)
 		renderer.FillRect(&background)
 
+		doplane(&player, renderer)
 		raycast(&player, renderer)
 		drawmap(&player, renderer)
 
@@ -308,6 +309,51 @@ func drawmap(player *Player, renderer *sdl.Renderer) {
 
 	renderer.SetDrawColor(255, 0, 0, 255)
 	renderer.DrawPoint(int32(player.PosY), int32(player.PosX))
+}
+
+func doplane(player *Player, renderer *sdl.Renderer) {
+	//var h int32 = 200
+
+	for y := 0; y < 200; y++ {
+		rayDirX0 := player.DirX - player.PlaneX
+		rayDirY0 := player.DirY - player.PlaneY
+		rayDirX1 := player.DirX + player.PlaneX
+		rayDirY1 := player.DirY + player.PlaneY
+
+		// current pos compared to screen center
+		p := y - 200/2 + 100 + int(player.LookY)
+		posZ := 0.5 * 200 /*+ float64(player.LookY)*/
+		rowDistance := posZ / float64(p)
+
+		// step vector on floor texture
+		floorStepX := rowDistance * (rayDirX1 - rayDirX0) / 320
+		floorStepY := rowDistance * (rayDirY1 - rayDirY0) / 320
+
+		floorX := player.PosX + rowDistance*rayDirX0
+		floorY := player.PosY + rowDistance*rayDirY0
+
+		//fmt.Printf("tx: %v\t\t ty: %v\n", floorX, floorY)
+
+		for x := 0; x < 320; x++ {
+			cellX := int32(floorX)
+			cellY := int32(floorY)
+
+			tx := int32(64*(floorX-float64(cellX))) & (64 - 1)
+			ty := int32(64*(floorY-float64(cellY))) & (64 - 1)
+
+			floorX += floorStepX
+			floorY += floorStepY
+
+			//fmt.Printf("tx: %v\t\t ty: %v\n", tx, ty)
+
+			var color uint32 = some_texture[tx][ty]
+			color = (color >> 1) & 0x7F7F7F7F
+
+			renderer.SetDrawColor(uint8(color&0xFF000000>>24), uint8(color&0x00FF0000>>16), uint8(color&0x0000FF00>>8), uint8(color&0x000000FF))
+			renderer.DrawPoint(int32(x), 100-int32(y)-1)
+			renderer.DrawPoint(int32(x), 100+int32(y))
+		}
+	}
 }
 
 func raycast(player *Player, renderer *sdl.Renderer) {
