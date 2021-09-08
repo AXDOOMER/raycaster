@@ -312,9 +312,7 @@ func drawmap(player *Player, renderer *sdl.Renderer) {
 }
 
 func dofloor(player *Player, renderer *sdl.Renderer) {
-	//var h int32 = 200
-
-	for y := 0; y < 200; y++ {
+	for y := 100 + int(player.LookY); y < 200; y++ {
 		rayDirX0 := player.DirX - player.PlaneX
 		rayDirY0 := player.DirY - player.PlaneY
 		rayDirX1 := player.DirX + player.PlaneX
@@ -332,28 +330,21 @@ func dofloor(player *Player, renderer *sdl.Renderer) {
 		floorX := player.PosX + rowDistance*rayDirX0
 		floorY := player.PosY + rowDistance*rayDirY0
 
-		//fmt.Printf("tx: %v\t\t ty: %v\n", floorX, floorY)
-
 		for x := 0; x < 320; x++ {
 			cellX := int32(floorX)
 			cellY := int32(floorY)
 
-			//fmt.Printf("tx: %v\t\t ty: %v\n", tx, ty)
+			tx := int32(64*(floorX-float64(cellX))) & (64 - 1)
+			ty := int32(64*(floorY-float64(cellY))) & (64 - 1)
 
-			if y >= 100+int(player.LookY) && y < 200 {
-				// floor
-				tx := int32(64*(floorX-float64(cellX))) & (64 - 1)
-				ty := int32(64*(floorY-float64(cellY))) & (64 - 1)
+			floorX += floorStepX
+			floorY += floorStepY
 
-				floorX += floorStepX
-				floorY += floorStepY
+			var color uint32 = some_texture[tx][ty]
+			color = (color >> 1) & 0x7F7F7F7F
+			renderer.SetDrawColor(uint8(color&0xFF000000>>24), uint8(color&0x00FF0000>>16), uint8(color&0x0000FF00>>8), uint8(color&0x000000FF))
 
-				var color uint32 = some_texture[tx][ty]
-				color = (color >> 1) & 0x7F7F7F7F
-				renderer.SetDrawColor(uint8(color&0xFF000000>>24), uint8(color&0x00FF0000>>16), uint8(color&0x0000FF00>>8), uint8(color&0x000000FF))
-
-				renderer.DrawPoint(int32(x), int32(y))
-			}
+			renderer.DrawPoint(int32(x), int32(y))
 		}
 	}
 }
