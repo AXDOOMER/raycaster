@@ -17,7 +17,7 @@ import (
 	"math"
 	"os"
 	"strings"
-	"unsafe"
+//	"unsafe"
 
 	"github.com/veandco/go-sdl2/sdl"
 )
@@ -286,26 +286,61 @@ func main() {
 
 		//renderer.Copy(texture, nil, nil)
 
-		surface, err := sdl.CreateRGBSurfaceFrom(unsafe.Pointer(&screenbuffer), 320, 200, 32, 8, 255, 255, 255, 255) 
+		/*surface, err := sdl.CreateRGBSurfaceFrom(unsafe.Pointer(&screenbuffer), 320, 200, 32, 8, 255, 255, 255, 255) 
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Failed to create surface: %s\n", err)
 			panic(err)
-		}
+		}*/
 
 
-		texture, err := renderer.CreateTextureFromSurface(surface)
+		/*texture, err := renderer.CreateTextureFromSurface(surface)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Failed to create texture: %s\n", err)
 			panic(err)
+		}*/
+
+
+		/*texture, err := renderer.CreateTexture(
+			sdl.PIXELFORMAT_RGBA8888,
+			sdl.TEXTUREACCESS_STREAMING,
+			320,
+			200,
+		)
+		if err != nil {
+			panic(err)
+		}
+		defer texture.Destroy()
+
+		pixels, _, err := texture.Lock(nil)
+		if err != nil {
+			panic(err)
 		}
 
-		renderer.Copy(texture, nil, nil)
+		for i := range(pixels) {
 
+			if i == 320 * 200 {
+				break
+			}
+
+			pixels[i] = byte(screenbuffer[i % 320][i / 320])
+		}
+
+		texture.Unlock()
+
+		renderer.Copy(texture, nil, nil)*/
 
 		drawsky(&player)
-		dofloor(&player, renderer)
-		raycast(&player, renderer)
-		drawmap(&player, renderer)
+		dofloor(&player)
+		raycast(&player)
+		drawmap(&player)
+
+		for y := 0; y < 200; y++ {
+			for x := 0; x < 320; x++ {
+				var color uint32 = screenbuffer[x][y]
+				renderer.SetDrawColor(uint8(color&0xFF000000>>24), uint8(color&0x00FF0000>>16), uint8(color&0x0000FF00>>8), uint8(color&0x000000FF))
+				renderer.DrawPoint(int32(x), int32(y))
+			}
+		}
 
 		//rect := sdl.Rect{int32(player.PosX), int32(player.PosY), 100, 100}
 		//renderer.SetDrawColor(255, 0, 0, 255)
@@ -347,21 +382,24 @@ func drawsky(player *Player) {
 	}
 }
 
-func drawmap(player *Player, renderer *sdl.Renderer) {
+func drawmap(player *Player) {
 	for y := 0; y < 24; y++ {
 		for x := 0; x < 24; x++ {
 			if worldmap[y][x] > 0 {
-				renderer.SetDrawColor(0, 255, 0, 255)
-				renderer.DrawPoint(int32(x), int32(y))
+				//renderer.SetDrawColor(0, 255, 0, 255)
+				var color uint32 = 0x00FF00FF
+				putPixel(int32(x), int32(y), color)
 			}
 		}
 	}
 
-	renderer.SetDrawColor(255, 0, 0, 255)
-	renderer.DrawPoint(int32(player.PosY), int32(player.PosX))
+	//renderer.SetDrawColor(255, 0, 0, 255)
+	//renderer.DrawPoint(int32(player.PosY), int32(player.PosX))
+	var color uint32 = 0xFF0000FF
+	putPixel(int32(player.PosY), int32(player.PosX), color)
 }
 
-func dofloor(player *Player, renderer *sdl.Renderer) {
+func dofloor(player *Player) {
 	for y := 100 + int(player.LookY); y < 200; y++ {
 		rayDirX0 := player.DirX - player.PlaneX
 		rayDirY0 := player.DirY - player.PlaneY
@@ -392,14 +430,12 @@ func dofloor(player *Player, renderer *sdl.Renderer) {
 
 			var color uint32 = some_texture[tx][ty]
 			color = (color >> 1) & 0x7F7F7F7F
-			renderer.SetDrawColor(uint8(color&0xFF000000>>24), uint8(color&0x00FF0000>>16), uint8(color&0x0000FF00>>8), uint8(color&0x000000FF))
-
-			renderer.DrawPoint(int32(x), int32(y))
+			putPixel(int32(x), int32(y), color)
 		}
 	}
 }
 
-func raycast(player *Player, renderer *sdl.Renderer) {
+func raycast(player *Player) {
 	var w int32 = 320
 	for x := 0; x < 320; x++ {
 		var cameraX float64 = 2.0*float64(x)/float64(w) - 1
@@ -515,8 +551,7 @@ func raycast(player *Player, renderer *sdl.Renderer) {
 				color = (color >> 1) & 0x7F7F7F7F
 			}
 
-			renderer.SetDrawColor(uint8(color&0xFF000000>>24), uint8(color&0x00FF0000>>16), uint8(color&0x0000FF00>>8), uint8(color&0x000000FF))
-			renderer.DrawPoint(int32(x), y)
+			putPixel(int32(x), int32(y), color)
 		}
 
 		/*var color uint32 = 0xFFFF00FF
