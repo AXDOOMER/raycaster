@@ -11,16 +11,18 @@ import (
 
 	"encoding/base64"
 	"fmt"
-	"image/png"
 	"image/jpeg"
+	"image/png"
 	"io"
 	"math"
 	"os"
 	"strings"
-//	"unsafe"
+	"time"
 
-	"github.com/veandco/go-sdl2/sdl"
+	//	"unsafe"
+
 	"github.com/nfnt/resize"
+	"github.com/veandco/go-sdl2/sdl"
 )
 
 const floor_texture = "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"
@@ -32,7 +34,6 @@ const sky_texture = "/9j/4AAQSkZJRgABAQIASABIAAD/4RV6RXhpZgAASUkqAAgAAAAFABoBBQA
 var some_texture = [64][64]uint32{{0}}
 var second_texture = [320][640]uint32{{0}}
 var third_texture = [64][64]uint32{{0}}
-
 
 // go get -v github.com/veandco/go-sdl2/sdl
 
@@ -60,32 +61,32 @@ type Keyboard struct {
 
 var worldmap = [24][24]int32{
 	{4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 7, 7, 7, 7, 7, 7, 7, 7},
-	{4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 7},
-	{4, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7},
-	{4, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7},
-	{4, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 7},
+	{4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 7},
+	{4, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 7},
+	{4, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 7},
+	{4, 0, 3, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 7},
 	{4, 0, 4, 0, 0, 0, 0, 5, 5, 5, 5, 5, 5, 5, 5, 5, 7, 7, 0, 7, 7, 7, 7, 7},
-	{4, 0, 5, 0, 0, 0, 0, 5, 0, 5, 0, 5, 0, 5, 0, 5, 7, 0, 0, 0, 7, 7, 7, 1},
-	{4, 0, 6, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 5, 7, 0, 0, 0, 0, 0, 0, 8},
-	{4, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 7, 7, 1},
-	{4, 0, 8, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 5, 7, 0, 0, 0, 0, 0, 0, 8},
-	{4, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 5, 7, 0, 0, 0, 7, 7, 7, 1},
-	{4, 0, 0, 0, 0, 0, 0, 5, 5, 5, 5, 0, 5, 5, 5, 5, 7, 7, 7, 7, 7, 7, 7, 1},
-	{6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 0, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6},
+	{4, 0, 5, 0, 0, 0, 0, 5, 0, 5, 0, 0, 0, 5, 0, 5, 7, 0, 0, 0, 7, 7, 7, 1},
+	{4, 0, 6, 0, 0, 0, 0, 5, 0, 1, 0, 2, 0, 2, 0, 5, 7, 0, 0, 0, 0, 0, 0, 8},
+	{4, 0, 7, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 7, 7, 1},
+	{4, 0, 8, 0, 0, 1, 0, 5, 0, 1, 0, 0, 0, 0, 0, 5, 7, 0, 0, 0, 0, 0, 0, 8},
+	{4, 0, 1, 0, 0, 1, 0, 5, 0, 0, 0, 0, 0, 1, 0, 5, 7, 0, 0, 0, 7, 7, 0, 1},
+	{4, 0, 1, 0, 0, 1, 0, 5, 5, 5, 5, 0, 5, 5, 5, 5, 7, 7, 7, 7, 7, 7, 0, 1},
+	{6, 0, 0, 6, 6, 6, 6, 6, 6, 6, 6, 0, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 0, 6},
 	{8, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4},
-	{6, 6, 6, 6, 6, 6, 0, 6, 6, 6, 6, 0, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6},
-	{4, 4, 4, 4, 4, 4, 0, 4, 4, 4, 6, 0, 6, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3},
-	{4, 0, 0, 0, 0, 0, 0, 0, 0, 4, 6, 0, 6, 2, 0, 0, 0, 0, 0, 2, 0, 0, 0, 2},
-	{4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 2, 0, 0, 5, 0, 0, 2, 0, 0, 0, 2},
-	{4, 0, 0, 0, 0, 0, 0, 0, 0, 4, 6, 0, 6, 2, 0, 0, 0, 0, 0, 2, 2, 0, 2, 2},
-	{4, 0, 6, 0, 6, 0, 0, 0, 0, 4, 6, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 2},
-	{4, 0, 0, 5, 0, 0, 0, 0, 0, 4, 6, 0, 6, 2, 0, 0, 0, 0, 0, 2, 2, 0, 2, 2},
-	{4, 0, 6, 0, 6, 0, 0, 0, 0, 4, 6, 0, 6, 2, 0, 0, 5, 0, 0, 2, 0, 0, 0, 2},
+	{6, 6, 6, 6, 6, 6, 0, 6, 6, 6, 6, 0, 6, 6, 6, 6, 0, 6, 6, 6, 6, 6, 6, 6},
+	{4, 4, 4, 4, 4, 4, 0, 4, 4, 4, 6, 0, 6, 2, 2, 2, 0, 2, 2, 2, 0, 0, 0, 3},
+	{4, 0, 0, 0, 0, 0, 0, 0, 0, 4, 6, 0, 6, 2, 1, 1, 0, 0, 0, 2, 0, 0, 0, 2},
+	{4, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 6, 2, 0, 0, 0, 0, 0, 2, 0, 1, 1, 2},
+	{4, 0, 1, 0, 0, 3, 0, 1, 0, 4, 6, 0, 6, 2, 0, 0, 0, 1, 0, 2, 0, 0, 0, 2},
+	{4, 0, 6, 0, 6, 0, 0, 0, 0, 4, 6, 0, 0, 0, 0, 0, 5, 1, 0, 0, 0, 0, 0, 2},
+	{4, 0, 0, 5, 0, 0, 0, 0, 0, 4, 6, 0, 6, 2, 0, 0, 2, 0, 0, 2, 0, 2, 2, 2},
+	{4, 0, 6, 0, 6, 1, 0, 0, 0, 4, 6, 0, 6, 2, 0, 0, 5, 0, 0, 2, 0, 0, 0, 2},
 	{4, 0, 0, 0, 0, 0, 0, 0, 0, 4, 6, 0, 6, 2, 0, 0, 0, 0, 0, 2, 0, 0, 0, 2},
 	{4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 1, 1, 1, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3},
 }
 
-var screenbuffer [320][200]uint32
+var screenbuffer [320 * 200 * 4]byte
 
 func main() {
 	if err := sdl.Init(sdl.INIT_EVERYTHING); err != nil {
@@ -110,8 +111,12 @@ func main() {
 	//renderer.SetIntegerScale(true)
 	defer renderer.Destroy()
 
-	// Virtual screen
-	//virtual := sdl.Rect{0, 0, 320, 200}
+	// Create texture for intermediate rendering
+	texture, err := renderer.CreateTexture(sdl.PIXELFORMAT_RGBA8888, sdl.TEXTUREACCESS_STREAMING, 320, 200)
+	if err != nil {
+		panic(err)
+	}
+	defer texture.Destroy()
 
 	// Define player and keyboard
 	player := Player{22, 11.5, -1, 0, 0, 0.66, 0, 0, 0.05}
@@ -125,6 +130,8 @@ func main() {
 
 	running := true
 	for running {
+		start := time.Now()
+
 		////////////////////////////////////////////////////////////////////////////
 		// GET KEYS AND EVENTS
 		////////////////////////////////////////////////////////////////////////////
@@ -276,88 +283,31 @@ func main() {
 		}
 
 		////////////////////////////////////////////////////////////////////////////
-		// UPDATE SCREEN
+		// RENDER GAME WORLD AND UPDATE RENDERER
 		////////////////////////////////////////////////////////////////////////////
-
-		renderer.SetDrawColor(0, 0, 0, 255)
-		renderer.Clear()
-
-		background := sdl.Rect{0, 0, 320, 200}
-		renderer.SetDrawColor(0, 0, 128, 255)
-		renderer.FillRect(&background)
-
-		//texture := renderer.CreateTexture(sdl.SDL_PIXELFORMAT_RGBA8888, sdl.SDL_TEXTUREACCESS_TARGET, 320, 200)
-
-		//renderer.pixels[0][0] = 0
-
-		//renderer.Copy(texture, nil, nil)
-
-		/*surface, err := sdl.CreateRGBSurfaceFrom(unsafe.Pointer(&screenbuffer), 320, 200, 32, 8, 255, 255, 255, 255) 
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "Failed to create surface: %s\n", err)
-			panic(err)
-		}*/
-
-
-		/*texture, err := renderer.CreateTextureFromSurface(surface)
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "Failed to create texture: %s\n", err)
-			panic(err)
-		}*/
-
-
-		/*texture, err := renderer.CreateTexture(
-			sdl.PIXELFORMAT_RGBA8888,
-			sdl.TEXTUREACCESS_STREAMING,
-			320,
-			200,
-		)
-		if err != nil {
-			panic(err)
-		}
-		defer texture.Destroy()
-
-		pixels, _, err := texture.Lock(nil)
-		if err != nil {
-			panic(err)
-		}
-
-		for i := range(pixels) {
-
-			if i == 320 * 200 {
-				break
-			}
-
-			pixels[i] = byte(screenbuffer[i % 320][i / 320])
-		}
-
-		texture.Unlock()
-
-		renderer.Copy(texture, nil, nil)*/
 
 		drawsky(&player)
 		dofloor(&player)
 		raycast(&player)
 		drawmap(&player)
 
-		for y := 0; y < 200; y++ {
-			for x := 0; x < 320; x++ {
-				var color uint32 = screenbuffer[x][y]
-				renderer.SetDrawColor(uint8(color&0xFF000000>>24), uint8(color&0x00FF0000>>16), uint8(color&0x0000FF00>>8), uint8(color&0x000000FF))
-				renderer.DrawPoint(int32(x), int32(y))
-			}
-		}
-
-		//rect := sdl.Rect{int32(player.PosX), int32(player.PosY), 100, 100}
-		//renderer.SetDrawColor(255, 0, 0, 255)
-		//renderer.FillRect(&rect)
+		texture.Update(nil, screenbuffer[:], 320*4)
+		renderer.Copy(texture, nil, nil)
 
 		////////////////////////////////////////////////////////////////////////////
 		// UPDATE SDL WINDOW
 		////////////////////////////////////////////////////////////////////////////
 
 		renderer.Present()
-		sdl.Delay(16)
+		elapsed := int(time.Since(start).Milliseconds())
+
+		if 16-elapsed < 0 {
+			elapsed = 0
+		} else {
+			elapsed = 16 - elapsed
+		}
+
+		sdl.Delay(uint32(elapsed))
 	}
 }
 
@@ -365,7 +315,11 @@ func putPixel(x int32, y int32, color uint32) {
 	// ignore values that are out of range
 	if x >= 0 && x < 320 {
 		if y >= 0 && y < 200 {
-			screenbuffer[x][y] = color
+			index := (y*320 + x) * 4
+			screenbuffer[index+0] = uint8(color & 0xFF)
+			screenbuffer[index+1] = uint8((color >> 8) & 0xFF)
+			screenbuffer[index+2] = uint8((color >> 16) & 0xFF)
+			screenbuffer[index+3] = uint8((color >> 24) & 0xFF)
 		}
 	}
 }
@@ -582,7 +536,6 @@ func samplePNG3() io.Reader {
 	return base64.NewDecoder(base64.StdEncoding, strings.NewReader(floor_texture))
 }
 
-
 func ExampleDecode() {
 	// This example uses png.Decode which can only decode PNG images.
 	// Consider using the general image.Decode as it can sniff and decode any registered image format.
@@ -597,12 +550,12 @@ func ExampleDecode() {
 		for x := img.Bounds().Min.X; x < img.Bounds().Max.X; x++ {
 			color := img.At(x, y)
 			rr, gg, bb, aa := color.RGBA()
-			println(rr>>8, gg>>8, bb>>8, aa>>8)
+			//println(rr>>8, gg>>8, bb>>8, aa>>8)
 			// pack values into pixels
 			var pixel uint32 = ((rr >> 8) << 24) | ((gg >> 8) << 16) | ((bb >> 8) << 8) | aa>>8
 			some_texture[y][x] = pixel
 		}
-		fmt.Print("\n")
+		//fmt.Print("\n")
 	}
 }
 
@@ -618,12 +571,12 @@ func ExampleDecode3() {
 		for x := img.Bounds().Min.X; x < img.Bounds().Max.X; x++ {
 			color := img.At(x, y)
 			rr, gg, bb, aa := color.RGBA()
-			println(rr>>8, gg>>8, bb>>8, aa>>8)
+			//println(rr>>8, gg>>8, bb>>8, aa>>8)
 			// pack values into pixels
 			var pixel uint32 = ((rr >> 8) << 24) | ((gg >> 8) << 16) | ((bb >> 8) << 8) | aa>>8
 			third_texture[y][x] = pixel
 		}
-		fmt.Print("\n")
+		//fmt.Print("\n")
 	}
 }
 
