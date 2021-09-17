@@ -122,8 +122,6 @@ func main() {
 	player := Player{22, 11.5, -1, 0, 0, 0.66, 0, 0, 0.05}
 	keyboard := Keyboard{0, 0, 0, 0, 0, 0, 0}
 
-	//drawsky(&player, renderer)
-
 	ExampleDecode()
 	ExampleDecode2()
 	ExampleDecode3()
@@ -283,6 +281,13 @@ func main() {
 		}
 
 		////////////////////////////////////////////////////////////////////////////
+		// CLEAR RENDERER
+		////////////////////////////////////////////////////////////////////////////
+
+		renderer.SetDrawColor(0, 0, 0, 0)
+		renderer.Clear()
+
+		////////////////////////////////////////////////////////////////////////////
 		// RENDER GAME WORLD AND UPDATE RENDERER
 		////////////////////////////////////////////////////////////////////////////
 
@@ -334,9 +339,6 @@ func drawsky(player *Player) {
 				slide += 1280
 			}
 			var color uint32 = second_texture[y][slide%640]
-			//renderer.SetDrawColor(uint8(color&0xFF000000>>24), uint8(color&0x00FF0000>>16), uint8(color&0x0000FF00>>8), uint8(color&0x000000FF))
-			//renderer.DrawPoint(int32(x), int32(y+int(player.LookY))-105)
-			//screenbuffer[int32(x)][ int32(y+int(player.LookY))-105] = color
 			putPixel(int32(x), int32(y+int(player.LookY))-105, color)
 		}
 	}
@@ -346,15 +348,12 @@ func drawmap(player *Player) {
 	for y := 0; y < 24; y++ {
 		for x := 0; x < 24; x++ {
 			if worldmap[y][x] > 0 {
-				//renderer.SetDrawColor(0, 255, 0, 255)
 				var color uint32 = 0x00FF00FF
 				putPixel(int32(x), int32(y), color)
 			}
 		}
 	}
 
-	//renderer.SetDrawColor(255, 0, 0, 255)
-	//renderer.DrawPoint(int32(player.PosY), int32(player.PosX))
 	var color uint32 = 0xFF0000FF
 	putPixel(int32(player.PosY), int32(player.PosX), color)
 }
