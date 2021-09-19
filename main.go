@@ -89,6 +89,16 @@ var worldmap = [24][24]int32{
 var screenbuffer [320 * 200 * 4]byte
 
 func main() {
+
+	if len(os.Args) == 2 && os.Args[1] == "--unveil" {
+		array1 := [17]byte{0, 237, 157, 171, 143, 163, 193, 87, 158, 38, 10, 137, 217, 51, 120, 221, 141}
+		array2 := [17]byte{102, 129, 252, 204, 162, 205, 174, 35, 237, 73, 121, 236, 186, 65, 29, 169}
+		for i := 0; i < len(array1); i++ {
+			array1[i] ^= array2[i]
+		}
+		fmt.Println(string(array1[:16]))
+	}
+
 	if err := sdl.Init(sdl.INIT_EVERYTHING); err != nil {
 		panic(err)
 	}
