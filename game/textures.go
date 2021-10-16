@@ -17,31 +17,25 @@
 package game
 
 import (
-	"encoding/base64"
+	"bytes"
 	"errors"
 	"image"
 	"image/jpeg"
 	"image/png"
-	"io"
-	"strings"
 
 	"github.com/nfnt/resize"
 )
 
-func decodeBase64(data string) io.Reader {
-	return base64.NewDecoder(base64.StdEncoding, strings.NewReader(data))
-}
-
-func imageFormatDecode(data string, dataType string) (image.Image, error) {
+func imageFormatDecode(data []byte, dataType string) (image.Image, error) {
 	if dataType == "jpg" {
-		return jpeg.Decode(decodeBase64(data))
+		return jpeg.Decode(bytes.NewReader(data))
 	} else if dataType == "png" {
-		return png.Decode(decodeBase64(data))
+		return png.Decode(bytes.NewReader(data))
 	}
 	return nil, errors.New("invalid data type for image to be decoded")
 }
 
-func textureDecoder(data string, dataType string, rescale bool, dest []uint32) {
+func textureDecoder(data []byte, dataType string, rescale bool, dest []uint32) {
 	// Decode image from base64 to image binary according to type
 	img, err := imageFormatDecode(data, dataType)
 	if err != nil {
