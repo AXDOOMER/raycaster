@@ -18,9 +18,6 @@ package main
 
 import "github.com/AXDOOMER/raycaster/game"
 
-// apt install libsdl2-2.0-0
-// go get -v github.com/veandco/go-sdl2/sdl
-
 func main() {
 	game.Start()
 }
