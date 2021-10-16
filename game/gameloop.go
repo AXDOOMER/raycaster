@@ -68,9 +68,9 @@ func Start() {
 	////////////////////////////////////////////////////////////////////////////
 	// DECODE GAME TEXTURE
 	////////////////////////////////////////////////////////////////////////////
-	textureDecoder(wall_texture, "png", true, first_texture[:])
-	textureDecoder(sky_texture, "jpg", false, second_texture[:])
-	textureDecoder(floor_texture, "png", false, third_texture[:])
+	textureDecoder(rock_texture, "png", true, wall_texture[:])
+	textureDecoder(clouds_texture, "jpg", false, sky_texture[:])
+	textureDecoder(dirt_texture, "png", false, floor_texture[:])
 
 	cycles := 0
 	running := true

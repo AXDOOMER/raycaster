@@ -33,21 +33,6 @@ func putPixel(x int32, y int32, color uint32) {
 	}
 }
 
-func blendPixel(x int32, y int32, color uint32) {
-	// ignore values that are out of range
-	if x >= 0 && x < 320 {
-		if y >= 0 && y < 200 {
-			if uint8((color)&0xFF) != 0 {
-				index := (y*320 + x) * 4
-				screenbuffer[index+0] = uint8(color&0xFF) | (screenbuffer[index+0] & 0x0F)
-				screenbuffer[index+1] = uint8((color>>8)&0xFF) | (screenbuffer[index+1] & 0x0F)
-				screenbuffer[index+2] = uint8((color>>16)&0xFF) | (screenbuffer[index+2] & 0x0F)
-				screenbuffer[index+3] = uint8((color>>24)&0xFF) | (screenbuffer[index+3] & 0x0F)
-			}
-		}
-	}
-}
-
 func renderSky(player *Player) {
 	// Do cylindrical projection?
 	for x := 0; x < 320; x++ {
@@ -57,7 +42,7 @@ func renderSky(player *Player) {
 			for slide < 0 {
 				slide += 1280
 			}
-			var color uint32 = second_texture[slide%640+y*640]
+			var color uint32 = sky_texture[slide%640+y*640]
 			putPixel(int32(x), int32(y+int(player.LookY))-105, color)
 		}
 	}
@@ -106,7 +91,7 @@ func renderFloors(player *Player) {
 			floorX += floorStepX
 			floorY += floorStepY
 
-			var color uint32 = third_texture[tx+ty*64]
+			var color uint32 = floor_texture[tx+ty*64]
 			color = (color >> 1) & 0x7F7F7F7F
 			putPixel(int32(x), int32(y), color)
 		}
@@ -217,7 +202,7 @@ func renderWalls(player *Player) {
 		for y := drawStart; y < drawEnd; y++ {
 			var texY int32 = int32(texPos) & (64 - 1)
 			texPos += step
-			var color uint32 = first_texture[texX+texY*64]
+			var color uint32 = wall_texture[texX+texY*64]
 
 			if side == 1 {
 				color = (color >> 1) & 0x7F7F7F7F

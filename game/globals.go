@@ -16,9 +16,9 @@
 
 package game
 
-var first_texture = [64 * 64]uint32{}
-var second_texture = [320 * 640]uint32{}
-var third_texture = [64 * 64]uint32{}
+var wall_texture = [64 * 64]uint32{}
+var sky_texture = [320 * 640]uint32{}
+var floor_texture = [64 * 64]uint32{}
 
 var worldmap = [24][24]int8{
 	{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
