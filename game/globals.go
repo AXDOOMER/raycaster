@@ -19,10 +19,6 @@ package game
 var first_texture = [64 * 64]uint32{}
 var second_texture = [320 * 640]uint32{}
 var third_texture = [64 * 64]uint32{}
-var fourth_texture = [64 * 64]uint32{}
-var fifth_texture = [115 * 200]uint32{}
-
-var circular_buffer = [20]uint8{0}
 
 var worldmap = [24][24]int8{
 	{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
@@ -52,6 +48,3 @@ var worldmap = [24][24]int8{
 }
 
 var screenbuffer [320 * 200 * 4]byte
-var reargate bool = false
-var enabled bool = false
-var triggered bool = false

