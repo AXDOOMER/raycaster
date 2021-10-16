@@ -7,3 +7,7 @@ Control keys:
 * `Shift`: Run
 * `Page up` and `Page down`: Look up and down
 * `Escape`: Exit the game
+
+## Screenshot
+
+![Screenshot](https://user-images.githubusercontent.com/6194072/137575834-71d3bb77-e049-4d90-a7f2-2126483efbbd.png)
