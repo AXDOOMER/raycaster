@@ -1,4 +1,4 @@
-// File: main.go (Raycaster)
+// File: structs.go (Raycaster)
 // Copyright (C) 2021 Alexandre-Xavier Labonté-Lamoureux
 //
 // This program is free software: you can redistribute it and/or modify
@@ -14,13 +14,26 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-package main
+package game
 
-import "github.com/AXDOOMER/raycaster/game"
+type Player struct {
+	PosX   float64
+	PosY   float64
+	DirX   float64
+	DirY   float64
+	PlaneX float64
+	PlaneY float64
+	Angle  float64
+	LookY  int32
+	Speed  float64
+}
 
-// apt install libsdl2-2.0-0
-// go get -v github.com/veandco/go-sdl2/sdl
-
-func main() {
-	game.Start()
+type Keyboard struct {
+	KeyUp       int32
+	KeyDown     int32
+	KeyLeft     int32
+	KeyRight    int32
+	KeyAction   int32
+	KeyLookUp   int32
+	KeyLookDown int32
 }

@@ -1,3 +1,4 @@
-all:
-	 go run main.go 
+NAME = raycaster
 
+all:
+	go build -o ${NAME} .
