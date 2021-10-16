@@ -22,6 +22,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/AXDOOMER/raycaster/assets"
 	"github.com/veandco/go-sdl2/sdl"
 )
 
@@ -40,7 +41,7 @@ func Start() {
 				if err == nil {
 					internal_x_resolution = int32(value)
 				} else {
-					fmt.Println("Unexpected value encountered for parameter -width")
+					fmt.Println("Unexpected value encountered for parameter -width, ignored")
 				}
 			}
 		} else if os.Args[i] == "-height" {
@@ -49,10 +50,11 @@ func Start() {
 				if err == nil {
 					internal_y_resolution = int32(value)
 				} else {
-					fmt.Println("Unexpected value encountered for parameter -height")
+					fmt.Println("Unexpected value encountered for parameter -height, ignored")
 				}
 			}
 		} else*/if os.Args[i] == "-software" {
+			// Useful if running inside a virtual machine
 			fmt.Println("Using software rendering")
 			renderer_acceleration = sdl.RENDERER_SOFTWARE
 		}
@@ -100,9 +102,9 @@ func Start() {
 	////////////////////////////////////////////////////////////////////////////
 	// DECODE GAME TEXTURE
 	////////////////////////////////////////////////////////////////////////////
-	textureDecoder(rock_texture, "png", true, wall_texture[:])
-	textureDecoder(clouds_texture, "jpg", false, sky_texture[:])
-	textureDecoder(dirt_texture, "png", false, floor_texture[:])
+	textureDecoder(assets.Rock_texture, "png", true, wall_texture[:])
+	textureDecoder(assets.Clouds_texture, "jpg", false, sky_texture[:])
+	textureDecoder(assets.Dirt_texture, "png", false, floor_texture[:])
 
 	cycles := 0
 	running := true

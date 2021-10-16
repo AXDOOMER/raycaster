@@ -1,6 +1,8 @@
 # raycaster
 
-This game engine was originally conceived for UnitedCTF 2021 (https://github.com/UnitedCTF/UnitedCTF-2021) as a reverse-engineering challenge. 
+This game engine was originally conceived for [UnitedCTF 2021](https://github.com/UnitedCTF/UnitedCTF-2021) as a reverse-engineering challenge. 
+
+Go v1.16 is required to compile this. Use the makefile to compile the project.
 
 Control keys:
 * `Arrows`: Moving and turning
