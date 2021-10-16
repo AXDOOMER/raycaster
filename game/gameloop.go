@@ -27,6 +27,38 @@ import (
 
 func Start() {
 	////////////////////////////////////////////////////////////////////////////
+	// COMMAND LINE PARAMETERS AND DEFAULTS
+	////////////////////////////////////////////////////////////////////////////
+	//var internal_x_resolution int32 = 320
+	//var internal_y_resolution int32 = 200
+	var renderer_acceleration uint32 = sdl.RENDERER_ACCELERATED
+
+	for i := 1; i < len(os.Args); i++ {
+		/*if os.Args[i] == "-width" {
+			if i+1 < len(os.Args) {
+				value, err := strconv.ParseUint(os.Args[i+1], 10, 32)
+				if err == nil {
+					internal_x_resolution = int32(value)
+				} else {
+					fmt.Println("Unexpected value encountered for parameter -width")
+				}
+			}
+		} else if os.Args[i] == "-height" {
+			if i+1 < len(os.Args) {
+				value, err := strconv.ParseUint(os.Args[i+1], 10, 32)
+				if err == nil {
+					internal_y_resolution = int32(value)
+				} else {
+					fmt.Println("Unexpected value encountered for parameter -height")
+				}
+			}
+		} else*/if os.Args[i] == "-software" {
+			fmt.Println("Using software rendering")
+			renderer_acceleration = sdl.RENDERER_SOFTWARE
+		}
+	}
+
+	////////////////////////////////////////////////////////////////////////////
 	// INIT SDL, WINDOW, RENDERER, TEXTURE
 	////////////////////////////////////////////////////////////////////////////
 	if err := sdl.Init(sdl.INIT_EVERYTHING); err != nil {
@@ -42,7 +74,7 @@ func Start() {
 	window.SetMinimumSize(320, 200)
 	defer window.Destroy()
 
-	renderer, err := sdl.CreateRenderer(window, -1, sdl.RENDERER_ACCELERATED)
+	renderer, err := sdl.CreateRenderer(window, -1, renderer_acceleration)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Failed to create renderer: %s\n", err)
 		panic(err)
