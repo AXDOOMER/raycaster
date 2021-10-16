@@ -11,3 +11,4 @@ tidy:
 
 run:
 	./$(NAME)
+  

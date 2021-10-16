@@ -42,6 +42,7 @@ func renderSky(player *Player) {
 			for slide < 0 {
 				slide += 1280
 			}
+
 			var color uint32 = sky_texture[slide%640+y*640]
 			putPixel(int32(x), int32(y+int(player.LookY))-105, color)
 		}
@@ -203,7 +204,6 @@ func renderWalls(player *Player) {
 			var texY int32 = int32(texPos) & (64 - 1)
 			texPos += step
 			var color uint32 = wall_texture[texX+texY*64]
-
 			if side == 1 {
 				color = (color >> 1) & 0x7F7F7F7F
 			}
