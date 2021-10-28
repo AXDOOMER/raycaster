@@ -22,9 +22,9 @@ import (
 
 func putPixel(x int32, y int32, color uint32) {
 	// ignore values that are out of range
-	if x >= 0 && x < 320 {
-		if y >= 0 && y < 200 {
-			index := (y*320 + x) * 4
+	if x >= 0 && x < 320*screen_scaling {
+		if y >= 0 && y < 200*screen_scaling {
+			index := (y*320*screen_scaling + x) * 4
 			screenbuffer[index+0] = uint8(color & 0xFF)
 			screenbuffer[index+1] = uint8((color >> 8) & 0xFF)
 			screenbuffer[index+2] = uint8((color >> 16) & 0xFF)
@@ -33,20 +33,34 @@ func putPixel(x int32, y int32, color uint32) {
 	}
 }
 
+func putPixelScaled(x int32, y int32, color uint32, multiplier int32) {
+	if multiplier < 1 {
+		multiplier = 1
+	}
+
+	xstop := x*multiplier + multiplier
+	ystop := y*multiplier + multiplier
+	for i := x * multiplier; i < xstop; i++ {
+		for j := y * multiplier; j < ystop; j++ {
+			putPixel(i, j, color)
+		}
+	}
+}
+
 func renderSky(player *Player) {
 	// Do cylindrical projection?
 	for x := 0; x < 320; x++ {
-		for y := 0; y < 200; y++ {
+		for y := 0; y < 240; y++ {
 			slide := x + int(player.Angle*205)
 
-			offset := slide % 640	/* 640 is the sky's horizontal resolution*/
+			offset := slide % 640 /* 640 is the sky's horizontal resolution*/
 			if offset < 0 {
 				// This accounts for Go's modulo behavior
 				offset += 640
 			}
 
 			var color uint32 = sky_texture[offset+y*640]
-			putPixel(int32(x), int32(y+int(player.LookY))-100, color)
+			putPixelScaled(int32(x), int32(y+int(player.LookY))-100, color, screen_scaling)
 		}
 	}
 }
@@ -56,35 +70,35 @@ func renderMinimap(player *Player) {
 		for x := 0; x < 24; x++ {
 			if worldmap[y][x] > 0 {
 				var color uint32 = 0x00FF00FF
-				putPixel(int32(x), int32(y), color)
+				putPixelScaled(int32(x), int32(y), color, screen_scaling)
 			}
 		}
 	}
 
 	var color uint32 = 0xFF0000FF
-	putPixel(int32(player.PosY), int32(player.PosX), color)
+	putPixelScaled(int32(player.PosY), int32(player.PosX), color, screen_scaling)
 }
 
 func renderFloors(player *Player) {
-	for y := 100 + int(player.LookY); y < 200; y++ {
+	for y := int(200*screen_scaling) + int(player.LookY); y < int(200*screen_scaling); y++ {
 		rayDirX0 := player.DirX - player.PlaneX
 		rayDirY0 := player.DirY - player.PlaneY
 		rayDirX1 := player.DirX + player.PlaneX
 		rayDirY1 := player.DirY + player.PlaneY
 
 		// current pos compared to screen center
-		p := y - 200/2 - int(player.LookY) + 1
-		posZ := 0.5 * 200
+		p := y - int(200*screen_scaling)/2 - int(player.LookY) + 1
+		posZ := 0.5 * float64(200*screen_scaling)
 		rowDistance := posZ / float64(p)
 
 		// step vector on floor texture
-		floorStepX := rowDistance * (rayDirX1 - rayDirX0) / 320
-		floorStepY := rowDistance * (rayDirY1 - rayDirY0) / 320
+		floorStepX := rowDistance * (rayDirX1 - rayDirX0) / float64(320*screen_scaling)
+		floorStepY := rowDistance * (rayDirY1 - rayDirY0) / float64(320*screen_scaling)
 
 		floorX := player.PosX + rowDistance*rayDirX0
 		floorY := player.PosY + rowDistance*rayDirY0
 
-		for x := 0; x < 320; x++ {
+		for x := 0; x < int(320*screen_scaling); x++ {
 			cellX := int32(floorX)
 			cellY := int32(floorY)
 
@@ -102,9 +116,8 @@ func renderFloors(player *Player) {
 }
 
 func renderWalls(player *Player) {
-	var w int32 = 320
-	for x := 0; x < 320; x++ {
-		var cameraX float64 = 2.0*float64(x)/float64(w) - 1
+	for x := 0; x < int(320*screen_scaling); x++ {
+		var cameraX float64 = 2.0*float64(x)/float64(320*screen_scaling) - 1
 		var rayDirX = player.DirX + player.PlaneX*cameraX
 		var rayDirY = player.DirY + player.PlaneY*cameraX
 
@@ -165,17 +178,17 @@ func renderWalls(player *Player) {
 			perpWallDist = (float64(mapY) - player.PosY + (1-float64(stepY))/2) / rayDirY
 		}
 
-		lineHeight := int32(200 / perpWallDist)
+		lineHeight := int32(float64(200*screen_scaling) / perpWallDist)
 
-		var drawStart int32 = -lineHeight/2 + 200/2
+		var drawStart int32 = -lineHeight/2 + 200*screen_scaling/2
 		drawStart += player.LookY
 		if drawStart < 0 {
 			drawStart = 0
 		}
-		var drawEnd int32 = lineHeight/2 + 200/2
+		var drawEnd int32 = lineHeight/2 + 200*screen_scaling/2
 		drawEnd += player.LookY
-		if drawEnd >= 200 {
-			drawEnd = 200 /*- 1*/
+		if drawEnd >= 200*screen_scaling {
+			drawEnd = 200 * screen_scaling /*- 1*/
 		}
 
 		// texture calculations
@@ -200,7 +213,7 @@ func renderWalls(player *Player) {
 
 		// screen texture to pixel stuff
 		var step float64 = 1.0 * 64 / float64(lineHeight)
-		var texPos float64 = float64((drawStart-player.LookY)-200/2+lineHeight/2) * step
+		var texPos float64 = float64((drawStart-player.LookY)-200*screen_scaling/2+lineHeight/2) * step
 
 		for y := drawStart; y < drawEnd; y++ {
 			var texY int32 = int32(texPos) & (64 - 1)

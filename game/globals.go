@@ -47,4 +47,6 @@ var worldmap = [24][24]int8{
 	{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
 }
 
-var screenbuffer [320 * 200 * 4]byte
+var screen_scaling int32 = 1
+//var screenbuffer [screen_width * screen_height * 4]byte
+var screenbuffer []byte
