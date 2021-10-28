@@ -38,13 +38,15 @@ func renderSky(player *Player) {
 	for x := 0; x < 320; x++ {
 		for y := 0; y < 200; y++ {
 			slide := x + int(player.Angle*205)
-			// Disgusting
-			for slide < 0 {
-				slide += 1280
+
+			offset := slide % 640	/* 640 is the sky's horizontal resolution*/
+			if offset < 0 {
+				// This accounts for Go's modulo behavior
+				offset += 640
 			}
 
-			var color uint32 = sky_texture[slide%640+y*640]
-			putPixel(int32(x), int32(y+int(player.LookY))-105, color)
+			var color uint32 = sky_texture[offset+y*640]
+			putPixel(int32(x), int32(y+int(player.LookY))-100, color)
 		}
 	}
 }
