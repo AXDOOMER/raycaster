@@ -50,7 +50,7 @@ func putPixelScaled(x int32, y int32, color uint32, multiplier int32) {
 func renderSky(player *Player) {
 	// Do cylindrical projection?
 	for x := 0; x < 320; x++ {
-		for y := 0; y < 240; y++ {
+		for y := 0; y < 200; y++ {
 			slide := x + int(player.Angle*205)
 
 			offset := slide % 640 /* 640 is the sky's horizontal resolution*/
@@ -80,14 +80,14 @@ func renderMinimap(player *Player) {
 }
 
 func renderFloors(player *Player) {
-	for y := int(200*screen_scaling) + int(player.LookY); y < int(200*screen_scaling); y++ {
+	for y := int(100*screen_scaling) + int(player.LookY*screen_scaling); y < int(200*screen_scaling); y++ {
 		rayDirX0 := player.DirX - player.PlaneX
 		rayDirY0 := player.DirY - player.PlaneY
 		rayDirX1 := player.DirX + player.PlaneX
 		rayDirY1 := player.DirY + player.PlaneY
 
 		// current pos compared to screen center
-		p := y - int(200*screen_scaling)/2 - int(player.LookY) + 1
+		p := y - int(200*screen_scaling)/2 - int(player.LookY*screen_scaling) + 1
 		posZ := 0.5 * float64(200*screen_scaling)
 		rowDistance := posZ / float64(p)
 
@@ -181,12 +181,12 @@ func renderWalls(player *Player) {
 		lineHeight := int32(float64(200*screen_scaling) / perpWallDist)
 
 		var drawStart int32 = -lineHeight/2 + 200*screen_scaling/2
-		drawStart += player.LookY
+		drawStart += player.LookY * screen_scaling
 		if drawStart < 0 {
 			drawStart = 0
 		}
 		var drawEnd int32 = lineHeight/2 + 200*screen_scaling/2
-		drawEnd += player.LookY
+		drawEnd += player.LookY * screen_scaling
 		if drawEnd >= 200*screen_scaling {
 			drawEnd = 200 * screen_scaling /*- 1*/
 		}
@@ -213,7 +213,7 @@ func renderWalls(player *Player) {
 
 		// screen texture to pixel stuff
 		var step float64 = 1.0 * 64 / float64(lineHeight)
-		var texPos float64 = float64((drawStart-player.LookY)-200*screen_scaling/2+lineHeight/2) * step
+		var texPos float64 = float64((drawStart-player.LookY*screen_scaling)-200*screen_scaling/2+lineHeight/2) * step
 
 		for y := drawStart; y < drawEnd; y++ {
 			var texY int32 = int32(texPos) & (64 - 1)

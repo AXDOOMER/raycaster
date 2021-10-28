@@ -31,8 +31,6 @@ func Start() {
 	////////////////////////////////////////////////////////////////////////////
 	// COMMAND LINE PARAMETERS AND DEFAULTS
 	////////////////////////////////////////////////////////////////////////////
-	//var internal_x_resolution int32 = 320
-	//var internal_y_resolution int32 = 200
 	var renderer_acceleration uint32 = sdl.RENDERER_ACCELERATED
 
 	for i := 1; i < len(os.Args); i++ {
@@ -65,7 +63,7 @@ func Start() {
 	if err != nil {
 		panic(err)
 	}
-	window.SetMinimumSize(320*screen_scaling, 200*screen_scaling)
+	window.SetMinimumSize(320, 200)
 	defer window.Destroy()
 
 	renderer, err := sdl.CreateRenderer(window, -1, renderer_acceleration)
@@ -73,7 +71,7 @@ func Start() {
 		fmt.Fprintf(os.Stderr, "Failed to create renderer: %s\n", err)
 		panic(err)
 	}
-	renderer.SetLogicalSize(320*screen_scaling, 200*screen_scaling)
+	renderer.SetLogicalSize(320, 200)
 	defer renderer.Destroy()
 
 	// Create texture for intermediate rendering
@@ -84,7 +82,7 @@ func Start() {
 	defer texture.Destroy()
 
 	// Allocate screen buffer
-	screenbuffer = make([]byte, 320*200*screen_scaling*4)
+	screenbuffer = make([]byte, 320*200*screen_scaling*screen_scaling*4)
 
 	////////////////////////////////////////////////////////////////////////////
 	// INIT PLAYER STATE
