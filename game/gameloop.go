@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"math"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/AXDOOMER/raycaster/assets"
@@ -30,30 +31,19 @@ func Start() {
 	////////////////////////////////////////////////////////////////////////////
 	// COMMAND LINE PARAMETERS AND DEFAULTS
 	////////////////////////////////////////////////////////////////////////////
-	//var internal_x_resolution int32 = 320
-	//var internal_y_resolution int32 = 200
 	var renderer_acceleration uint32 = sdl.RENDERER_ACCELERATED
 
 	for i := 1; i < len(os.Args); i++ {
-		/*if os.Args[i] == "-width" {
+		if os.Args[i] == "-scale" {
 			if i+1 < len(os.Args) {
 				value, err := strconv.ParseUint(os.Args[i+1], 10, 32)
-				if err == nil {
-					internal_x_resolution = int32(value)
+				if err == nil && value >= 1 {
+					screen_scaling = int32(value)
 				} else {
-					fmt.Println("Unexpected value encountered for parameter -width, ignored")
+					fmt.Println("Unexpected value encountered for parameter -scale, ignored")
 				}
 			}
-		} else if os.Args[i] == "-height" {
-			if i+1 < len(os.Args) {
-				value, err := strconv.ParseUint(os.Args[i+1], 10, 32)
-				if err == nil {
-					internal_y_resolution = int32(value)
-				} else {
-					fmt.Println("Unexpected value encountered for parameter -height, ignored")
-				}
-			}
-		} else*/if os.Args[i] == "-software" {
+		} else if os.Args[i] == "-software" {
 			// Useful if running inside a virtual machine
 			fmt.Println("Using software rendering")
 			renderer_acceleration = sdl.RENDERER_SOFTWARE
@@ -85,11 +75,14 @@ func Start() {
 	defer renderer.Destroy()
 
 	// Create texture for intermediate rendering
-	texture, err := renderer.CreateTexture(sdl.PIXELFORMAT_RGBA8888, sdl.TEXTUREACCESS_STREAMING, 320, 200)
+	texture, err := renderer.CreateTexture(sdl.PIXELFORMAT_RGBA8888, sdl.TEXTUREACCESS_STREAMING, 320*screen_scaling, 200*screen_scaling)
 	if err != nil {
 		panic(err)
 	}
 	defer texture.Destroy()
+
+	// Allocate screen buffer
+	screenbuffer = make([]byte, 320*200*screen_scaling*screen_scaling*4)
 
 	////////////////////////////////////////////////////////////////////////////
 	// INIT PLAYER STATE
@@ -261,7 +254,7 @@ func Start() {
 		renderWalls(&player)
 		renderMinimap(&player)
 
-		texture.Update(nil, screenbuffer[:], 320*4)
+		texture.Update(nil, screenbuffer[:], 320*int(screen_scaling)*4)
 		renderer.Copy(texture, nil, nil)
 
 		////////////////////////////////////////////////////////////////////////////
