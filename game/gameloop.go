@@ -42,11 +42,20 @@ func Start() {
 				} else {
 					fmt.Println("Unexpected value encountered for parameter -scale, ignored")
 				}
+			} else {
+				fmt.Println("Missing value for parameter -scale")
 			}
 		} else if os.Args[i] == "-software" {
 			// Useful if running inside a virtual machine
-			fmt.Println("Using software rendering")
+			fmt.Println("SDL hardware acceleration was forcefully disabled")
 			renderer_acceleration = sdl.RENDERER_SOFTWARE
+		} else if os.Args[i] == "-demo" {
+			if i+1 < len(os.Args) {
+				demoFileName = os.Args[i+1]
+				readDemoFile(demoFileName)
+			} else {
+				fmt.Println("Missing value for parameter -demo")
+			}
 		}
 	}
 
@@ -90,7 +99,7 @@ func Start() {
 
 	// Define player and keyboard
 	player := Player{22, 11.5, -1, 0, 0, 0.66, 0, 0, 0.05}
-	keyboard := Keyboard{0, 0, 0, 0, 0, 0, 0}
+	keyboard := Keyboard{0, 0, 0, 0, 0, 0, 0, 0}
 
 	////////////////////////////////////////////////////////////////////////////
 	// DECODE GAME TEXTURE
@@ -158,9 +167,9 @@ func Start() {
 
 				case sdl.K_RSHIFT, sdl.K_LSHIFT:
 					if keyPressed == sdl.PRESSED {
-						player.Speed *= 2
+						keyboard.KeySpeed += 1
 					} else if keyPressed == sdl.RELEASED {
-						player.Speed /= 2
+						keyboard.KeySpeed = 0
 					}
 
 				case sdl.K_PAGEUP:
@@ -181,9 +190,21 @@ func Start() {
 			}
 		}
 
+		writeDemoCommand(keyboard)
+
 		////////////////////////////////////////////////////////////////////////////
 		// UPDATE PLAYER
 		////////////////////////////////////////////////////////////////////////////
+
+		if running = readDemoCommand(cycles, &keyboard, running); !running {
+			break
+		}
+
+		if keyboard.KeySpeed > 0 {
+			player.Speed = 0.10
+		} else {
+			player.Speed = 0.05
+		}
 
 		if keyboard.KeyUp > 0 {
 			if worldmap[int32(player.PosX+player.DirX*player.Speed)][int32(player.PosY)] == 0 {
@@ -273,4 +294,6 @@ func Start() {
 		sdl.Delay(uint32(elapsed))
 		cycles++
 	}
+
+	writeDemoFile()
 }

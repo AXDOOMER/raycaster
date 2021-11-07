@@ -33,6 +33,7 @@ type Keyboard struct {
 	KeyDown     int32
 	KeyLeft     int32
 	KeyRight    int32
+	KeySpeed    int32
 	KeyAction   int32
 	KeyLookUp   int32
 	KeyLookDown int32

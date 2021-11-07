@@ -36,8 +36,8 @@ func putPixel(x int32, y int32, color uint32) {
 func putPixelScaled(x int32, y int32, color uint32, multiplier int32) {
 	xstop := x*multiplier + multiplier
 	ystop := y*multiplier + multiplier
-	for i := x * multiplier; i < xstop; i++ {
-		for j := y * multiplier; j < ystop; j++ {
+	for j := y * multiplier; j < ystop; j++ {
+		for i := x * multiplier; i < xstop; i++ {
 			putPixel(i, j, color)
 		}
 	}
@@ -45,8 +45,9 @@ func putPixelScaled(x int32, y int32, color uint32, multiplier int32) {
 
 func renderSky(player *Player) {
 	// Do cylindrical projection?
-	for x := 0; x < 320; x++ {
-		for y := 0; y < 200; y++ {
+	for y := 0; y < 200; y++ {
+		height := int32(y+int(player.LookY)) - 100
+		for x := 0; x < 320; x++ {
 			slide := x + int(player.Angle*205)
 
 			offset := slide % 640 /* 640 is the sky's horizontal resolution*/
@@ -56,7 +57,7 @@ func renderSky(player *Player) {
 			}
 
 			var color uint32 = sky_texture[offset+y*640]
-			putPixelScaled(int32(x), int32(y+int(player.LookY))-100, color, screen_scaling)
+			putPixelScaled(int32(x), height, color, screen_scaling)
 		}
 	}
 }
