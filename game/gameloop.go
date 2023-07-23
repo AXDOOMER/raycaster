@@ -90,8 +90,9 @@ func Start() {
 	}
 	defer texture.Destroy()
 
-	// Allocate screen buffer
+	// Allocate screen buffer and zbuffer
 	screenbuffer = make([]byte, 320*200*screen_scaling*screen_scaling*4)
+	zbuffer = make([]float64, 320*screen_scaling)
 
 	////////////////////////////////////////////////////////////////////////////
 	// INIT PLAYER STATE
@@ -104,9 +105,10 @@ func Start() {
 	////////////////////////////////////////////////////////////////////////////
 	// DECODE GAME TEXTURE
 	////////////////////////////////////////////////////////////////////////////
-	textureDecoder(assets.Rock_texture, "png", true, wall_texture[:])
-	textureDecoder(assets.Clouds_texture, "jpg", false, sky_texture[:])
-	textureDecoder(assets.Dirt_texture, "png", false, floor_texture[:])
+	textureDecoder(assets.Get("rock.png"), "png", true, wall_texture[:])
+	textureDecoder(assets.Get("clouds.jpg"), "jpg", false, sky_texture[:])
+	textureDecoder(assets.Get("dirt.png"), "png", false, floor_texture[:])
+	textureDecoder(assets.Get("donald.png"), "png", false, donald_texture[:])
 
 	cycles := 0
 	running := true
@@ -273,6 +275,7 @@ func Start() {
 		renderSky(&player)
 		renderFloors(&player)
 		renderWalls(&player)
+		renderSprites(&player)
 		renderMinimap(&player)
 
 		texture.Update(nil, screenbuffer[:], 320*int(screen_scaling)*4)

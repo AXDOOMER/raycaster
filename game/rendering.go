@@ -222,5 +222,86 @@ func renderWalls(player *Player) {
 
 			putPixel(int32(x), int32(y), color)
 		}
+
+		// for each drawn slipe of wall, save its distance to the 1D depth buffer
+		zbuffer[x] = perpWallDist
+	}
+}
+
+func renderSprites(player *Player) {
+	// Extra float precision is used to avoid graphic glitches
+	var spriteX float64 = 5.0 - player.PosX
+	var spriteY float64 = 5.0 - player.PosY
+	var h float64 = float64(200 * screen_scaling)
+	var w float64 = float64(320 * screen_scaling)
+
+	// Compute the needed value for correct matrix multiplication
+	// It's used to compute the transformed sprite via inverse camera matrix
+	var invDet float64 = 1.0 / (player.PlaneX*player.DirY - player.DirX*player.PlaneY)
+
+	// Compute the actual depth inside the screen, that's our Z in the 3D. Used to avoid fisheye effect.
+	var transformX float64 = invDet * (player.DirY*spriteX - player.DirX*spriteY)
+	var transformY float64 = invDet * (-player.PlaneY*spriteX + player.PlaneX*spriteY)
+
+	var spriteScreenX float64 = float64((w / 2) * (1 + float64(transformX/transformY)))
+
+	// Height of the sprite on screen, using transformY as real distance to prevent fisheye.
+	var spriteHeight float64 = float64(math.Abs(float64(float64(h) / transformY)))
+
+	// Calculate the lowest and highest pixel to fill in current stripe
+	var drawStartY float64 = float64(-spriteHeight/2 + h/2)
+	drawStartY += float64(player.LookY * screen_scaling)
+	if drawStartY < 0 {
+		drawStartY = 0
+	}
+
+	var drawEndY float64 = float64(spriteHeight/2 + h/2)
+	drawEndY += float64(player.LookY * screen_scaling)
+	if drawEndY >= h {
+		drawEndY = h - 1
+	}
+
+	// Calculate width of the sprite at its distance
+	var spriteWidth float64 = float64(math.Abs(float64(h) / (transformY)))
+	var drawStartX float64 = -spriteWidth/2 + spriteScreenX
+
+	if drawStartX < 0 {
+		drawStartX = 0
+	}
+
+	var drawEndX float64 = spriteWidth/2 + spriteScreenX
+	if drawEndX >= w {
+		drawEndX = w - 1
+	}
+
+	// Draw sprite vertically, just like walls
+	for column := float64(drawStartX); column < float64(drawEndX); column++ {
+		var texX int32 = int32((column - (-spriteWidth/2 + spriteScreenX)) * 64 / spriteWidth)
+		// The conditions:
+		// 1     - It's in front of the plane (the player doesn't see things behind him)
+		// 2 & 3 - It's on the screen
+		// 4     - It's in front of the value in the z-buffer, meaning it's not hidden behind a wall
+		if transformY > 0 && column > 0 && column < w && transformY < zbuffer[int32(column)] {
+			// For every pixel in the column
+			for y := drawStartY; y < drawEndY; y++ {
+				var d float64 = y - float64(player.LookY*screen_scaling) - h*0.5 + spriteHeight*0.5
+				var texY int32 = int32((d * 64) / spriteHeight) // 64 is sprite height
+				var color uint32 = donald_texture[64*texY+texX]
+				// Don't draw 100% invisible colors
+				// TODO: putPixel could be improved to handle this by itself
+				/*
+					putPixelAlpha implementation
+					i.e. compute a ratio between the colors according to the alpha value and that's the new color
+					if (color & 0x000000FF) != 255 {
+						newcolor = (3 * colorbuffer[y][column] / 4 + color / 4) // 25% transparency
+						// OR
+						newcolor = (colorbuffer[y][column] / 2 + color / 2) // 50% transparency
+					} else normal rendering. Could also check if 255 because can skip the entire pixel.
+				*/
+				if (color & 0x000000FF) == 255 {
+					putPixel(int32(column), int32(y), color)
+				}
+			}
+		}
 	}
 }

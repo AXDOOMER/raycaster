@@ -20,6 +20,12 @@ var wall_texture = [64 * 64]uint32{}
 var sky_texture = [320 * 640]uint32{}
 var floor_texture = [64 * 64]uint32{}
 
+// TODO: Implement sprites table and support for sprites larger than 64 pixels w or h
+var donald_texture = [64 * 64]uint32{}
+var statue_texture = [128 * 57]uint32{}
+var skull_texture = [54 * 25]uint32{}
+var tree_texture = [192 * 147]uint32{}
+
 var worldmap = [24][24]int8{
 	{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
 	{1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1},
@@ -49,3 +55,4 @@ var worldmap = [24][24]int8{
 
 var screen_scaling int32 = 1
 var screenbuffer []byte
+var zbuffer []float64

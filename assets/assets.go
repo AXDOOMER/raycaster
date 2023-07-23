@@ -16,13 +16,19 @@
 
 package assets
 
-import _ "embed"
+import (
+	"embed"
+)
 
-//go:embed dirt.png
-var Dirt_texture []byte
+//go:embed *.png
+//go:embed *.jpg
+var folder embed.FS
 
-//go:embed rock.png
-var Rock_texture []byte
+func Get(path string) []byte {
+	data, err := folder.ReadFile(path)
+	if err != nil {
+		panic(err)
+	}
 
-//go:embed clouds.jpg
-var Clouds_texture []byte
+	return data
+}
