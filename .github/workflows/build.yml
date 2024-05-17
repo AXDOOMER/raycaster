@@ -1,0 +1,52 @@
+name: Build Raycaster with PGO
+
+on:
+  push:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4.1.5
+
+    - name: Install SDL2
+      run: |
+        sudo apt-get update -y
+        sudo apt-get install libsdl2-dev
+
+    - name: Set up Go
+      uses: actions/setup-go@v5.0.1
+      with:
+        go-version: 1.22.3
+    - run: go version
+    - run: make tidy
+
+    - name: Run headless test
+      uses: coactions/setup-xvfb@v1.0.1
+      with:
+        run: make runtestdemo
+
+    - name: Create Build
+      run: |
+        make build
+
+    - name: Create Archive
+      uses: actions/upload-artifact@v4
+      with:
+        name: raycaster
+        path: raycaster
+
+  vulnerability-scan:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4.1.5
+
+    - name: Run Trivy vulnerability scanner
+      uses: aquasecurity/trivy-action@0.20.0
+      with:
+        scan-type: 'fs'
+        scan-ref: '.'

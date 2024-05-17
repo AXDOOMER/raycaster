@@ -56,6 +56,8 @@ func Start() {
 			} else {
 				fmt.Println("Missing value for parameter -demo")
 			}
+		} else if os.Args[i] == "-fast" {
+			speed_limiter = false
 		}
 	}
 
@@ -283,15 +285,17 @@ func Start() {
 		////////////////////////////////////////////////////////////////////////////
 
 		renderer.Present()
-		elapsed := int(time.Since(start).Milliseconds())
+		if speed_limiter {
+			elapsed := int(time.Since(start).Milliseconds())
 
-		if 16-elapsed < 0 {
-			elapsed = 0
-		} else {
-			elapsed = 16 - elapsed
+			if 16-elapsed < 0 {
+				elapsed = 0
+			} else {
+				elapsed = 16 - elapsed
+			}
+
+			sdl.Delay(uint32(elapsed))
 		}
-
-		sdl.Delay(uint32(elapsed))
 		cycles++
 	}
 

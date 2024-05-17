@@ -11,4 +11,6 @@ tidy:
 
 run:
 	./$(NAME)
-  
+
+runtestdemo:
+	$(GO) build -o $(NAME) . && time ./$(NAME) -demo testdata/testdemo -fast

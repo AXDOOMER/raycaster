@@ -48,4 +48,5 @@ var worldmap = [24][24]int8{
 }
 
 var screen_scaling int32 = 1
+var speed_limiter = true
 var screenbuffer []byte
