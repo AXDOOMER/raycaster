@@ -44,15 +44,29 @@ func putPixelScaled(x int32, y int32, color uint32, multiplier int32) {
 }
 
 func renderSky(player *Player) {
-	// Do cylindrical projection?
+	// Cylindrical projection: map each screen column to a direction angle using the camera plane,
+	// then sample the sky texture horizontally by that angle. Keep vertical sample as before.
 	for y := 0; y < 200; y++ {
 		height := int32(y+int(player.LookY)) - 100
 		for x := 0; x < 320; x++ {
-			slide := x + int(player.Angle*205)
+			// compute direction for this column (same method as wall rays)
+			cameraX := (2.0 * float64(x) / 320.0) - 1.0
+			dirX := player.DirX + player.PlaneX*cameraX
+			dirY := player.DirY + player.PlaneY*cameraX
 
-			offset := slide % 640 /* 640 is the sky's horizontal resolution*/
+			// angle around the player (-pi..pi)
+			angle := math.Atan2(dirY, dirX)
+
+			// map angle to texture coordinate [0,1)
+			u := (angle + math.Pi) / (math.Pi)
+
+			// flip horizontally to fix reversed sky and add shift sky by 45 degrees
+			u = 1.0 - u + 0.25
+
+			// map to texture width (640) and guard against negative modulo
+			offset := int(u * 640.0)
+			offset = offset % 640
 			if offset < 0 {
-				// This accounts for Go's modulo behavior
 				offset += 640
 			}
 
