@@ -42,22 +42,66 @@ func putPixelScaled(x int32, y int32, color uint32, multiplier int32) {
 		}
 	}
 }
-
 func renderSky(player *Player) {
-	// Do cylindrical projection?
-	for y := 0; y < 200; y++ {
-		height := int32(y+int(player.LookY)) - 100
-		for x := 0; x < 320; x++ {
-			slide := x + int(player.Angle*205)
+	// Compute horizon in screen-space (unscaled 0..199).
+	// Positive LookY moves the horizon down (more sky visible).
+	horizon := 100 + int(player.LookY)
+	if horizon < 0 {
+		horizon = 0
+	}
+	if horizon > 200 {
+		horizon = 200
+	}
 
-			offset := slide % 640 /* 640 is the sky's horizontal resolution*/
+	for y := 0; y < horizon; y++ {
+		// normalized vertical coordinate (-1 .. 1)
+		cameraY := 2.0*float64(y)/200.0 - 1.0
+
+		for x := 0; x < 320; x++ {
+			// normalized horizontal coordinate (-1 .. 1)
+			cameraX := 2.0*float64(x)/320.0 - 1.0
+
+			// base direction for this pixel
+			dirX := player.DirX + player.PlaneX*cameraX
+			dirY := player.DirY + player.PlaneY*cameraX
+
+			// pitch: scale down LookY so vertical motion is reasonable
+			pitch := float64(player.LookY) / 200.0
+			// combine vertical component from screen row and pitch
+			dirZ := -cameraY*0.5 + pitch
+
+			// normalize direction
+			length := math.Sqrt(dirX*dirX + dirY*dirY + dirZ*dirZ)
+			if length == 0 {
+				length = 1
+			}
+			dirX /= length
+			dirY /= length
+			dirZ /= length
+
+			// horizontal texture coordinate from yaw
+			theta := math.Atan2(dirY, dirX)
+			u := (theta + math.Pi) / (2.0 * math.Pi)
+			// small fixed offset to align texture similarly to previous behavior
+			u = 1.0 - u + 0.25
+			offset := int(u * 640.0)
+			offset %= 640
 			if offset < 0 {
-				// This accounts for Go's modulo behavior
 				offset += 640
 			}
 
-			var color uint32 = sky_texture[offset+y*640]
-			putPixelScaled(int32(x), height, color, screen_scaling)
+			// vertical texture coordinate from inclination
+			phi := math.Acos(dirZ)
+			v := phi / math.Pi
+			ty := int(v * 200.0)
+			if ty < 0 {
+				ty = 0
+			} else if ty >= 200 {
+				ty = 199
+			}
+
+			var color uint32 = sky_texture[offset+ty*640]
+			putPixelScaled(int32(x), int32(y), color, screen_scaling)
 		}
 	}
 }
